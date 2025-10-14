@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>boardplan</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --board-bg: #dfe3e6;
+      --list-bg: #ebecf0;
+      --card-bg: #fff;
+      --text: #172b4d;
+      --muted: #5e6c84;
+      --header: #026aa7;
+      --primary: var(--header);
+      --primary-hover: #025c92;
+      --thumb: #7a869a;
+      --blue: #4c9aff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: var(--header);
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    #projectTitle {
+      font-weight: 700;
+      cursor: pointer;
+      max-width: 50%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header-buttons {
+      display: flex;
+      gap: 16px;
+      margin-left: auto;
+      align-items: center;
+    }
+    .header-buttons button {
+      background: none;
+      border: none;
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 400;
+      cursor: pointer;
+      padding: 0;
+      transition: filter 120ms ease;
+    }
+    .header-buttons button:hover {
+      filter: brightness(85%);
+    }
+
+    .board {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: calc(100vh - 56px);
+      background: var(--board-bg);
+      scrollbar-width: thin;
+      scrollbar-color: var(--thumb) transparent;
+    }
+    .board::-webkit-scrollbar { height: 10px; }
+    .board::-webkit-scrollbar-track { background: transparent; }
+    .board::-webkit-scrollbar-thumb {
+      background: var(--thumb);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .list {
+      background: var(--list-bg);
+      border-radius: 8px;
+      width: 272px;
+      flex: 0 0 272px;
+      padding: 8px;
+      box-shadow: 0 1px 0 rgba(9,30,66,.25);
+      word-wrap: break-word;
+    }
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .list-title {
+      font-weight: 700;
+      cursor: pointer;
+      word-break: break-word;
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 12px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 6px;
+      padding: 8px;
+      box-shadow: 0 1px 0 rgba(9,30,66,.25);
+      cursor: grab;
+      font-weight: 400;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .card-content {
+      flex: 1;
+      word-break: break-word;
+      white-space: normal;
+    }
+    .card:active { cursor: grabbing; }
+
+    .add-card {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+    .add-card input,
+    #newListName {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #c1c7d0;
+      border-radius: 6px;
+      background: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 400;
+      min-width: 0;
+    }
+    .add-card button,
+    .add-list button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      transition: background-color 120ms ease;
+      flex-shrink: 0;
+    }
+    .add-card button:hover,
+    .add-list button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .add-list {
+      min-width: 272px;
+      background: #ffffff55;
+      border: 2px dashed #c1c7d0;
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .remove {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .remove:hover { color: #c9372c; }
+
+    /* Blue highlight placeholders */
+    .ghost {
+      background: #4c9aff33;
+      border: 2px dashed var(--blue);
+      border-radius: 6px;
+      min-height: 36px;
+      margin: 2px 0;
+    }
+    .list-ghost {
+      background: #4c9aff22;
+      border: 2px dashed var(--blue);
+      border-radius: 8px;
+      width: 272px;
+      min-height: 100px;
+      margin: 0 6px;
+    }
+
+    @keyframes pop-in { 0% { transform: scale(0.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes pop-out { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.92); opacity: 0; } }
+    .anim-add { animation: pop-in 200ms ease-out; }
+    .anim-remove { animation: pop-out 160ms ease-in forwards; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title" id="projectTitle">Project Board</div>
+    <div class="header-buttons">
+      <button id="downloadBtn">Download</button>
+      <button id="importBtn">Import</button>
+      <input type="file" id="importFile" accept=".txt" style="display:none"/>
+    </div>
+  </header>
+
+  <main class="board" id="board">
+    <section class="list anim-add" data-list-id="todo" draggable="true">
+      <div class="list-header">
+        <div class="list-title">To do</div>
+        <button class="remove" title="Delete list" aria-label="Delete list">×</button>
+      </div>
+      <div class="cards" data-list="todo"></div>
+      <div class="add-card">
+        <input type="text" placeholder="Add a card..." />
+        <button>Add</button>
+      </div>
+    </section>
+
+    <section class="list anim-add" data-list-id="doing" draggable="true">
+      <div class="list-header">
+        <div class="list-title">Doing</div>
+        <button class="remove" title="Delete list" aria-label="Delete list">×</button>
+      </div>
+      <div class="cards" data-list="doing"></div>
+      <div class="add-card">
+        <input type="text" placeholder="Add a card..." />
+        <button>Add</button>
+      </div>
+    </section>
+
+    <section class="list anim-add" data-list-id="done" draggable="true">
+      <div class="list-header">
+        <div class="list-title">Done</div>
+        <button class="remove" title="Delete list" aria-label="Delete list">×</button>
+      </div>
+      <div class="cards" data-list="done"></div>
+      <div class="add-card">
+        <input type="text" placeholder="Add a card..." />
+        <button>Add</button>
+      </div>
+    </section>
+
+    <section class="add-list" id="addList">
+      <input id="newListName" type="text" placeholder="Add a list..." />
+      <button id="addListBtn">Add</button>
+    </section>
+  </main>
+
+  <script>
+    const board = document.getElementById('board');
+    const projectTitle = document.getElementById('projectTitle');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+
+    // Seed data
+    const seed = {
+      todo: ["Card 1"],
+      doing: ["Card 2"],
+      done: ["Card 3"]
+    };
+
+    // Editable project title (double-click, max 30 chars)
+    projectTitle.addEventListener('dblclick', () => {
+      const current = projectTitle.textContent.trim();
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = current;
+      input.maxLength = 30;
+      input.style.fontFamily = 'Montserrat, sans-serif';
+      input.style.fontWeight = '700';
+      input.style.fontSize = 'inherit';
+      input.style.color = 'inherit';
+      input.style.background = 'transparent';
+      input.style.border = 'none';
+      input.style.outline = 'none';
+      input.style.width = '50%';
+
+      projectTitle.replaceWith(input);
+      input.focus();
+      input.select();
+
+      function save() {
+        let val = input.value.trim();
+        if (!val) val = 'Project Board';
+        if (val.length > 30) val = val.slice(0, 30);
+        const newTitle = document.createElement('div');
+        newTitle.id = 'projectTitle';
+        newTitle.className = 'title';
+        newTitle.textContent = val;
+        // Reattach edit
+        newTitle.addEventListener('dblclick', () => {
+          const evt = new Event('dblclick');
+          newTitle.dispatchEvent(evt);
+        });
+        input.replaceWith(newTitle);
+      }
+      input.addEventListener('blur', save);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+    });
+
+    // Create card
+    function createCard(text) {
+      const el = document.createElement('div');
+      el.className = 'card anim-add';
+      el.draggable = true;
+      el.addEventListener('dragstart', onCardDragStart);
+      el.addEventListener('dragend', onCardDragEnd);
+
+      const content = document.createElement('div');
+      content.className = 'card-content';
+      content.textContent = text;
+      content.addEventListener('dblclick', () => renameElement(content, 'card'));
+
+      const del = document.createElement('button');
+      del.className = 'remove';
+      del.textContent = '×';
+      del.title = 'Delete card';
+      del.addEventListener('click', () => animateRemove(el));
+
+      el.appendChild(content);
+      el.appendChild(del);
+      return el;
+    }
+
+    // Animations
+    function animateRemove(el) {
+      el.classList.add('anim-remove');
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+    }
+
+    // Render seed
+    function renderSeed() {
+      Object.entries(seed).forEach(([listId, cards]) => {
+        const container = document.querySelector(`.cards[data-list="${listId}"]`);
+        cards.forEach(c => container.appendChild(createCard(c)));
+      });
+    }
+
+    // Wire lists (add/remove/rename, card DnD, list DnD)
+    function wireLists() {
+      document.querySelectorAll('.list').forEach(list => {
+        if (list.id === 'addList') return;
+
+        // Card container events
+        const cards = list.querySelector('.cards');
+        cards.addEventListener('dragover', onCardDragOver);
+        cards.addEventListener('drop', onCardDrop);
+
+        // Add card
+        const input = list.querySelector('.add-card input');
+        const btn = list.querySelector('.add-card button');
+        const addCard = () => {
+          const val = input.value.trim();
+          if (!val) return;
+          cards.appendChild(createCard(val));
+          input.value = '';
+        };
+        btn.addEventListener('click', addCard);
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') addCard(); });
+
+        // Remove list
+        const removeListBtn = list.querySelector('.list-header .remove');
+        removeListBtn.addEventListener('click', () => animateRemove(list));
+
+        // Rename list
+        const title = list.querySelector('.list-title');
+        title.addEventListener('dblclick', () => renameElement(title, 'list'));
+
+        // List drag events
+        list.addEventListener('dragstart', onListDragStart);
+        list.addEventListener('dragend', onListDragEnd);
+      });
+    }
+
+    // Rename logic (cards & lists)
+    function renameElement(el, type) {
+      const current = el.textContent.trim();
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = current;
+      input.style.width = '100%';
+      input.style.fontFamily = 'Montserrat, sans-serif';
+      input.style.fontWeight = (type === 'list') ? '700' : '400';
+      input.style.border = '1px solid #c1c7d0';
+      input.style.borderRadius = '6px';
+      input.style.padding = '6px';
+      input.style.background = '#fff';
+
+      el.replaceWith(input);
+      input.focus();
+      input.select();
+
+      function save() {
+        const val = input.value.trim();
+        const replacement = document.createElement(type === 'list' ? 'div' : 'div');
+        replacement.className = type === 'list' ? 'list-title' : 'card-content';
+        replacement.textContent = val || current; // keep old if empty
+        replacement.addEventListener('dblclick', () => renameElement(replacement, type));
+        input.replaceWith(replacement);
+      }
+      input.addEventListener('blur', save);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+    }
+
+    // Card drag & drop
+    let cardDrag = { el: null, ghost: null };
+    function onCardDragStart(e) {
+      cardDrag.el = e.target.closest('.card');
+      if (!cardDrag.el) return;
+      e.stopPropagation();
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', 'card-drag');
+
+      cardDrag.ghost = document.createElement('div');
+      cardDrag.ghost.className = 'ghost';
+      cardDrag.ghost.style.height = `${cardDrag.el.offsetHeight}px`;
+      cardDrag.el.parentElement.insertBefore(cardDrag.ghost, cardDrag.el.nextSibling);
+
+      setTimeout(() => cardDrag.el.style.opacity = '0.5', 0);
+    }
+    function onCardDragEnd() {
+      if (!cardDrag.el) return;
+      cardDrag.el.style.opacity = '1';
+      if (cardDrag.ghost) cardDrag.ghost.remove();
+      cardDrag = { el: null, ghost: null };
+    }
+    function onCardDragOver(e) {
+      e.preventDefault();
+      const target = e.currentTarget;
+      const afterEl = getCardAfterElement(target, e.clientY);
+      if (!cardDrag.ghost) return;
+      if (afterEl == null) {
+        target.appendChild(cardDrag.ghost);
+      } else {
+        target.insertBefore(cardDrag.ghost, afterEl);
+      }
+    }
+    function onCardDrop(e) {
+      e.preventDefault();
+      const target = e.currentTarget;
+      if (cardDrag.ghost && cardDrag.el) {
+        target.insertBefore(cardDrag.el, cardDrag.ghost);
+      } else if (cardDrag.el) {
+        target.appendChild(cardDrag.el);
+      }
+      onCardDragEnd();
+    }
+    function getCardAfterElement(container, y) {
+      const els = [...container.querySelectorAll('.card')].filter(el => el !== cardDrag.el);
+      return els.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // List drag & drop
+    let listDrag = { el: null, ghost: null };
+    function onListDragStart(e) {
+      listDrag.el = e.target.closest('.list');
+      if (!listDrag.el || listDrag.el.id === 'addList') return;
+      e.stopPropagation();
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', 'list-drag');
+
+      listDrag.ghost = document.createElement('div');
+      listDrag.ghost.className = 'list-ghost';
+      listDrag.ghost.style.width = `${listDrag.el.offsetWidth}px`;
+      listDrag.el.parentElement.insertBefore(listDrag.ghost, listDrag.el.nextSibling);
+
+      setTimeout(() => listDrag.el.style.opacity = '0.5', 0);
+    }
+    function onListDragEnd() {
+      if (!listDrag.el) return;
+      listDrag.el.style.opacity = '1';
+      if (listDrag.ghost) listDrag.ghost.remove();
+      listDrag = { el: null, ghost: null };
+    }
+    board.addEventListener('dragover', e => {
+      if (!listDrag.el) return;
+      e.preventDefault();
+      const afterEl = getListAfterElement(board, e.clientX);
+      if (!listDrag.ghost) return;
+      if (afterEl == null) {
+        board.insertBefore(listDrag.ghost, document.getElementById('addList'));
+      } else {
+        board.insertBefore(listDrag.ghost, afterEl);
+      }
+    });
+    board.addEventListener('drop', e => {
+      if (!listDrag.el) return;
+      e.preventDefault();
+      if (listDrag.ghost) {
+        board.insertBefore(listDrag.el, listDrag.ghost);
+      }
+      onListDragEnd();
+    });
+    function getListAfterElement(container, x) {
+      const lists = [...container.querySelectorAll('.list')].filter(el => el !== listDrag.el && el.id !== 'addList');
+      return lists.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = x - box.left - box.width / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Add new list
+    const nameInput = document.getElementById('newListName');
+    const addListBtn = document.getElementById('addListBtn');
+    function addList(name) {
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      const list = document.createElement('section');
+      list.className = 'list anim-add';
+      list.dataset.listId = trimmed.toLowerCase().replace(/\s+/g, '-');
+      list.draggable = true;
+      list.innerHTML = `
+        <div class="list-header">
+          <div class="list-title">${escapeHtml(trimmed)}</div>
+          <button class="remove" title="Delete list" aria-label="Delete list">×</button>
+        </div>
+        <div class="cards" data-list="${list.dataset.listId}"></div>
+        <div class="add-card">
+          <input type="text" placeholder="Add a card..." />
+          <button>Add</button>
+        </div>
+      `;
+      board.insertBefore(list, document.getElementById('addList'));
+      wireLists();
+    }
+    addListBtn.addEventListener('click', () => { const name = nameInput.value; if (!name.trim()) return; addList(name); nameInput.value=''; });
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') { const name=nameInput.value; if(!name.trim())return; addList(name); nameInput.value=''; } });
+
+    function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+
+    // Download functionality (file name = project name)
+    downloadBtn.addEventListener('click', () => {
+      const nameEl = document.getElementById('projectTitle');
+      const name = (nameEl ? nameEl.textContent : 'Project Board').trim() || 'Project Board';
+      let content = `"${name}"\n`;
+      document.querySelectorAll('.list').forEach(list => {
+        if (list.id === 'addList') return;
+        const listName = list.querySelector('.list-title').textContent.trim();
+        const cards = [...list.querySelectorAll('.card-content')].map(c => `"${c.textContent.trim()}"`);
+        content += `"${listName}"[${cards.join(',')}]\n`;
+      });
+      const blob = new Blob([content], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name}.txt`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // Import functionality (accept only valid .txt format)
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file || !file.name.endsWith('.txt')) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const lines = (reader.result || '').split('\n').map(l => l.trim()).filter(Boolean);
+          if (!lines.length) return;
+
+          // First line => project name
+          const projMatch = lines[0].match(/^"(.*)"$/);
+          const projName = projMatch ? projMatch[1] : null;
+          if (projName) {
+            const titleEl = document.getElementById('projectTitle');
+            titleEl.textContent = projName.slice(0, 30);
+          }
+
+          // Clear existing lists except addList
+          document.querySelectorAll('.list').forEach(l => { if (l.id !== 'addList') l.remove(); });
+
+          // Parse lists: "List name"["card1","card2",...]
+          lines.slice(1).forEach(line => {
+            const m = line.match(/^"([^"]+)"\[(.*)\]$/);
+            if (!m) return; // silently ignore invalid
+            const listName = m[1];
+            const raw = m[2].trim();
+            const cards = raw
+              ? raw.match(/"([^"]*)"/g)?.map(s => s.replace(/^"|"$/g, '')) || []
+              : [];
+
+            const list = document.createElement('section');
+            list.className = 'list anim-add';
+            list.draggable = true;
+            list.innerHTML = `
+              <div class="list-header">
+                <div class="list-title">${escapeHtml(listName)}</div>
+                <button class="remove" title="Delete list" aria-label="Delete list">×</button>
+              </div>
+              <div class="cards"></div>
+              <div class="add-card">
+                <input type="text" placeholder="Add a card..." />
+                <button>Add</button>
+              </div>
+            `;
+            const cardsContainer = list.querySelector('.cards');
+            cards.forEach(c => cardsContainer.appendChild(createCard(c)));
+            board.insertBefore(list, document.getElementById('addList'));
+          });
+
+          wireLists();
+        } catch {
+          // silently ignore bad format
+        } finally {
+          importFile.value = '';
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Init
+    renderSeed();
+    wireLists();
+  </script>
+</body>
+</html>
