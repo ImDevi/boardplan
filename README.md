@@ -1,4 +1,4 @@
-<img width="222" height="222" alt="image" src="https://github.com/user-attachments/assets/99552ef4-62d6-4162-b469-2c882e1b0160" />
+<img width="150" height="150" alt="image" src="https://github.com/user-attachments/assets/99552ef4-62d6-4162-b469-2c882e1b0160" />
 
 **boardplan**
 -----------------------------------------------------------------------------------------------
