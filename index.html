@@ -420,6 +420,7 @@
     (function initBoardName() {
       boardNameInput.setAttribute('maxlength', '30');
       boardNameInput.value = boardNameInput.value || 'Unnamed';
+      setTimeout(updateBoardNameWidth, 0);
       updateBoardNameWidth();
 
       boardNameInput.addEventListener('focus', () => {
@@ -765,3 +766,4 @@
   </script>
 </body>
 </html>
+
