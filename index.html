@@ -1,209 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>boardplan</title>
   <link rel="icon" type="image/png" href="favicon.png" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #f5f6f8;
-      --board-bg: #dfe3e6;
-      --list-bg: #ebecf0;
-      --card-bg: #fff;
-      --text: #172b4d;
-      --muted: #5e6c84;
+    :root{
+      --scale: 1.2;
+      --header-height: 56px;
       --header: #026aa7;
-      --primary: var(--header);
-      --primary-hover: #025c92;
+      --page-bg: #0b1220;
+      --board-bg: #0b1220;
+      --list-bg: #1f293f;
+      --card-bg: #0f1720;
+      --text: #e6eef6;
+      --muted: #9aa4b2;
       --thumb: #7a869a;
       --blue: #4c9aff;
     }
+
+    /* global scale */
+    html { font-size: calc(100% * var(--scale)); height: 100%; }
+    body, html { height: 100%; margin: 0; background: var(--page-bg); color: var(--text); font-family: 'Montserrat', sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+
     header {
+      height: var(--header-height);
+      min-height: var(--header-height);
       background: var(--header);
       color: #fff;
-      padding: 12px 16px;
+      padding: 0 18px;
       display: flex;
       align-items: center;
-      gap: 16px;
-    }
-    #projectTitle {
-      font-weight: 700;
-      cursor: pointer;
-      max-width: 50%;
+      gap: 8px;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .header-buttons {
-      display: flex;
-      gap: 16px;
-      margin-left: auto;
-      align-items: center;
-    }
-    .header-buttons button {
-      background: none;
-      border: none;
-      color: #fff;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 400;
-      cursor: pointer;
-      padding: 0;
-      transition: filter 120ms ease;
-    }
-    .header-buttons button:hover {
-      filter: brightness(85%);
     }
 
+    #projectTitle {
+      font-weight: 700;
+      cursor: default;
+      user-select: none;
+      color: #ffffff;
+      font-size: 30px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      margin-right: 20px;
+    }
+
+    .board-name-wrap { display:inline-flex; align-items:center; }
+    .board-name {
+      display:inline-flex;
+      align-items:center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #ffffff;
+      background: transparent;
+      color: #fff;
+      height: 40px;
+      line-height: 1;
+      max-width: 36vw;
+      overflow: hidden;
+    }
+
+    #boardNameInput {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0;
+      margin: 0;
+      width: auto;
+      min-width: 1ch;
+      caret-color: #fff;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+      max-width: 100%;
+      height: 24px;
+      box-sizing: content-box;
+    }
+
+    .header-buttons {
+      display:flex;
+      gap:12px;
+      margin-left:auto;
+      align-items:center;
+    }
+    .header-buttons button {
+      background: transparent;
+      color: #fff;
+      border: 1px solid #ffffff;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 140ms ease;
+      font-size: 1rem;
+      height: 40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .header-buttons button:hover { transform: scale(1.04); }
+
     .board {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 16px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      height: calc(100vh - 56px);
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+      padding: 18px;
+      height: calc(100vh - var(--header-height));
+      overflow-x:auto;
+      overflow-y:hidden;
       background: var(--board-bg);
       scrollbar-width: thin;
       scrollbar-color: var(--thumb) transparent;
     }
-    .board::-webkit-scrollbar { height: 10px; }
-    .board::-webkit-scrollbar-track { background: transparent; }
-    .board::-webkit-scrollbar-thumb {
+
+    .board::-webkit-scrollbar,
+    .cards::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      height: 12px;
+      width: 12px;
+    }
+    .board::-webkit-scrollbar-track,
+    .cards::-webkit-scrollbar-track,
+    body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .board::-webkit-scrollbar-thumb,
+    .cards::-webkit-scrollbar-thumb,
+    body::-webkit-scrollbar-thumb {
       background: var(--thumb);
       border-radius: 999px;
-      border: 2px solid transparent;
+      border: 3px solid transparent;
       background-clip: padding-box;
     }
+    .board, .cards, body { scrollbar-color: var(--thumb) transparent; scrollbar-width: thin; }
 
     .list {
       background: var(--list-bg);
-      border-radius: 8px;
+      border-radius: 10px;
       width: 272px;
       flex: 0 0 272px;
-      padding: 8px;
-      box-shadow: 0 1px 0 rgba(9,30,66,.25);
+      padding: 10px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.35);
       word-wrap: break-word;
-    }
-    .list-header {
+
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
+      flex-direction: column;
+      align-items: stretch;
+      height: auto;
+      max-height: calc(100vh - var(--header-height) - 48px);
     }
+
+    .list-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+      flex: 0 0 auto;
+      cursor: grab;
+    }
+    .list-header[draggable="true"]:active { cursor: grabbing; }
     .list-title {
-      font-weight: 700;
-      cursor: pointer;
-      word-break: break-word;
+      font-weight:700;
+      cursor:pointer;
+      word-break:break-word;
+      font-size:1rem;
+      color:#ffffff;
     }
 
     .cards {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-height: 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding-right:6px;
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: calc(100% - 120px);
     }
 
     .card {
       background: var(--card-bg);
-      border-radius: 6px;
-      padding: 8px;
-      box-shadow: 0 1px 0 rgba(9,30,66,.25);
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.35);
       cursor: grab;
-      font-weight: 400;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 8px;
+      font-weight:400;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      font-size:0.98rem;
     }
     .card-content {
-      flex: 1;
-      word-break: break-word;
-      white-space: normal;
+      flex:1;
+      word-break:break-word;
+      white-space:normal;
+      color:#ffffff;
     }
     .card:active { cursor: grabbing; }
 
     .add-card {
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: nowrap;
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:nowrap;
+      flex: 0 0 auto;
+      user-select: none;
     }
     .add-card input,
     #newListName {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #c1c7d0;
-      border-radius: 6px;
-      background: #fff;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 400;
-      min-width: 0;
+      flex:1;
+      padding:10px;
+      border:1px solid #2b3440;
+      border-radius:8px;
+      background: #0b1220;
+      font-family:'Montserrat',sans-serif;
+      font-weight:400;
+      min-width:0;
+      font-size:0.95rem;
+      color: var(--text);
+      user-select: text;
+    }
+    .add-card input::placeholder,
+    #newListName::placeholder {
+      color: #9aa4b2;
+      opacity: 1;
     }
     .add-card button,
     .add-list button {
-      background: var(--primary);
+      background: var(--header);
       color: #fff;
       border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
+      padding: 10px 14px;
+      border-radius: 8px;
       cursor: pointer;
       font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      transition: background-color 120ms ease;
-      flex-shrink: 0;
+      font-weight:700;
+      transition: transform 120ms ease;
+      flex-shrink:0;
+      font-size:0.95rem;
+      height:40px;
     }
     .add-card button:hover,
-    .add-list button:hover {
-      background-color: var(--primary-hover);
-    }
+    .add-list button:hover { transform: scale(1.02); }
 
     .add-list {
-      min-width: 272px;
-      background: #ffffff55;
-      border: 2px dashed #c1c7d0;
-      border-radius: 8px;
-      padding: 12px;
+      width: 272px;
+      flex: 0 0 272px;
+      background: rgba(255,255,255,0.03);
+      border: 2px dashed #2b3440;
+      border-radius: 10px;
+      padding: 14px;
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
+      height: auto;
+      max-height: calc(100vh - var(--header-height) - 48px);
     }
 
     .remove {
-      appearance: none;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
-      flex-shrink: 0;
+      appearance:none;
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      cursor:pointer;
+      font-size:20px;
+      line-height:1;
+      flex-shrink:0;
     }
-    .remove:hover { color: #c9372c; }
+    .remove:hover { color:#c9372c; }
 
-    /* Blue highlight placeholders */
     .ghost {
-      background: #4c9aff33;
+      background: #4c9aff22;
       border: 2px dashed var(--blue);
       border-radius: 6px;
-      min-height: 36px;
+      min-height: 40px;
       margin: 2px 0;
     }
     .list-ghost {
       background: #4c9aff22;
       border: 2px dashed var(--blue);
-      border-radius: 8px;
+      border-radius: 10px;
       width: 272px;
-      min-height: 100px;
+      min-height: 110px;
       margin: 0 6px;
     }
 
@@ -211,115 +306,146 @@
     @keyframes pop-out { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.92); opacity: 0; } }
     .anim-add { animation: pop-in 200ms ease-out; }
     .anim-remove { animation: pop-out 160ms ease-in forwards; }
+
+    .measurer {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      visibility: hidden;
+      height: auto;
+      white-space: nowrap;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0;
+      margin: 0;
+    }
+
+    header > * { display:inline-flex; align-items:center; }
+
+    body { overflow-y: auto; }
   </style>
 </head>
 <body>
   <header>
-    <div class="title" id="projectTitle">Project Board</div>
+    <div id="projectTitle">boardplan</div>
+
+    <div class="board-name-wrap" aria-hidden="false">
+      <div class="board-name" aria-hidden="false">
+        <input id="boardNameInput" type="text" value="Unnamed" maxlength="30" aria-label="Board name" />
+      </div>
+    </div>
+
     <div class="header-buttons">
-      <button id="downloadBtn">Download</button>
-      <button id="importBtn">Import</button>
-      <input type="file" id="importFile" accept=".txt" style="display:none"/>
+      <button id="downloadBtn" title="Download board">Download</button>
+      <button id="importBtn" title="Import board">Import</button>
+      <input type="file" id="importFile" accept=".txt" style="display:none" />
     </div>
   </header>
 
-  <main class="board" id="board">
-    <section class="list anim-add" data-list-id="todo" draggable="true">
-      <div class="list-header">
+  <main class="board" id="board" role="main" aria-label="Project board">
+    <section class="list anim-add" data-list-id="todo">
+      <div class="list-header" draggable="true">
         <div class="list-title">To do</div>
         <button class="remove" title="Delete list" aria-label="Delete list">×</button>
       </div>
       <div class="cards" data-list="todo"></div>
       <div class="add-card">
-        <input type="text" placeholder="Add a card..." />
+        <input type="text" placeholder="Add a card..." aria-label="New card title" />
         <button>Add</button>
       </div>
     </section>
 
-    <section class="list anim-add" data-list-id="doing" draggable="true">
-      <div class="list-header">
+    <section class="list anim-add" data-list-id="doing">
+      <div class="list-header" draggable="true">
         <div class="list-title">Doing</div>
         <button class="remove" title="Delete list" aria-label="Delete list">×</button>
       </div>
       <div class="cards" data-list="doing"></div>
       <div class="add-card">
-        <input type="text" placeholder="Add a card..." />
+        <input type="text" placeholder="Add a card..." aria-label="New card title" />
         <button>Add</button>
       </div>
     </section>
 
-    <section class="list anim-add" data-list-id="done" draggable="true">
-      <div class="list-header">
+    <section class="list anim-add" data-list-id="done">
+      <div class="list-header" draggable="true">
         <div class="list-title">Done</div>
         <button class="remove" title="Delete list" aria-label="Delete list">×</button>
       </div>
       <div class="cards" data-list="done"></div>
       <div class="add-card">
-        <input type="text" placeholder="Add a card..." />
+        <input type="text" placeholder="Add a card..." aria-label="New card title" />
         <button>Add</button>
       </div>
     </section>
 
     <section class="add-list" id="addList">
-      <input id="newListName" type="text" placeholder="Add a list..." />
+      <input id="newListName" type="text" placeholder="Add a list..." aria-label="New list name" />
       <button id="addListBtn">Add</button>
     </section>
   </main>
 
+  <div id="measurer" class="measurer" aria-hidden="true"></div>
+
   <script>
     const board = document.getElementById('board');
-    const projectTitle = document.getElementById('projectTitle');
     const downloadBtn = document.getElementById('downloadBtn');
     const importBtn = document.getElementById('importBtn');
     const importFile = document.getElementById('importFile');
+    const boardNameInput = document.getElementById('boardNameInput');
+    const measurer = document.getElementById('measurer');
 
-    // Seed data
     const seed = {
       todo: ["Card 1"],
       doing: ["Card 2"],
       done: ["Card 3"]
     };
 
-    // Editable project title (double-click, max 30 chars)
-    projectTitle.addEventListener('dblclick', () => {
-      const current = projectTitle.textContent.trim();
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = current;
-      input.maxLength = 30;
-      input.style.fontFamily = 'Montserrat, sans-serif';
-      input.style.fontWeight = '700';
-      input.style.fontSize = 'inherit';
-      input.style.color = 'inherit';
-      input.style.background = 'transparent';
-      input.style.border = 'none';
-      input.style.outline = 'none';
-      input.style.width = '50%';
+    function updateBoardNameWidth() {
+      const raw = boardNameInput.value;
+      const text = (raw === null || raw === undefined || raw === '') ? ' ' : raw;
+      const cs = window.getComputedStyle(boardNameInput);
+      measurer.style.fontFamily = cs.fontFamily;
+      measurer.style.fontWeight = cs.fontWeight;
+      measurer.style.fontSize = cs.fontSize;
+      measurer.textContent = text;
+      const measured = Math.ceil(measurer.getBoundingClientRect().width);
+      const desired = measured;
+      const parentWidth = boardNameInput.parentElement.getBoundingClientRect().width;
+      const maxAllowed = Math.max(parentWidth - 8, 24);
+      boardNameInput.style.width = Math.min(desired, maxAllowed) + 'px';
+    }
 
-      projectTitle.replaceWith(input);
-      input.focus();
-      input.select();
+    (function initBoardName() {
+      boardNameInput.setAttribute('maxlength', '30');
+      boardNameInput.value = boardNameInput.value || 'Unnamed';
+      updateBoardNameWidth();
 
-      function save() {
-        let val = input.value.trim();
-        if (!val) val = 'Project Board';
-        if (val.length > 30) val = val.slice(0, 30);
-        const newTitle = document.createElement('div');
-        newTitle.id = 'projectTitle';
-        newTitle.className = 'title';
-        newTitle.textContent = val;
-        // Reattach edit
-        newTitle.addEventListener('dblclick', () => {
-          const evt = new Event('dblclick');
-          newTitle.dispatchEvent(evt);
-        });
-        input.replaceWith(newTitle);
-      }
-      input.addEventListener('blur', save);
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
-    });
+      boardNameInput.addEventListener('focus', () => {
+        const len = boardNameInput.value.length;
+        setTimeout(() => boardNameInput.setSelectionRange(len, len), 0);
+      });
 
-    // Create card
+      boardNameInput.addEventListener('input', updateBoardNameWidth);
+
+      boardNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          boardNameInput.value = boardNameInput.value.trim();
+          updateBoardNameWidth();
+          boardNameInput.blur();
+        }
+      });
+
+      boardNameInput.addEventListener('blur', () => {
+        boardNameInput.value = (boardNameInput.value || '').trim();
+        updateBoardNameWidth();
+      });
+
+      window.addEventListener('resize', updateBoardNameWidth);
+    })();
+
     function createCard(text) {
       const el = document.createElement('div');
       el.className = 'card anim-add';
@@ -343,31 +469,31 @@
       return el;
     }
 
-    // Animations
     function animateRemove(el) {
       el.classList.add('anim-remove');
       el.addEventListener('animationend', () => el.remove(), { once: true });
     }
 
-    // Render seed
     function renderSeed() {
       Object.entries(seed).forEach(([listId, cards]) => {
         const container = document.querySelector(`.cards[data-list="${listId}"]`);
+        if (!container) return;
         cards.forEach(c => container.appendChild(createCard(c)));
       });
     }
 
-    // Wire lists (add/remove/rename, card DnD, list DnD)
     function wireLists() {
       document.querySelectorAll('.list').forEach(list => {
         if (list.id === 'addList') return;
 
-        // Card container events
+        const header = list.querySelector('.list-header');
+        header.addEventListener('dragstart', onListDragStart);
+        header.addEventListener('dragend', onListDragEnd);
+
         const cards = list.querySelector('.cards');
         cards.addEventListener('dragover', onCardDragOver);
         cards.addEventListener('drop', onCardDrop);
 
-        // Add card
         const input = list.querySelector('.add-card input');
         const btn = list.querySelector('.add-card button');
         const addCard = () => {
@@ -379,21 +505,14 @@
         btn.addEventListener('click', addCard);
         input.addEventListener('keydown', e => { if (e.key === 'Enter') addCard(); });
 
-        // Remove list
         const removeListBtn = list.querySelector('.list-header .remove');
         removeListBtn.addEventListener('click', () => animateRemove(list));
 
-        // Rename list
         const title = list.querySelector('.list-title');
         title.addEventListener('dblclick', () => renameElement(title, 'list'));
-
-        // List drag events
-        list.addEventListener('dragstart', onListDragStart);
-        list.addEventListener('dragend', onListDragEnd);
       });
     }
 
-    // Rename logic (cards & lists)
     function renameElement(el, type) {
       const current = el.textContent.trim();
       const input = document.createElement('input');
@@ -402,20 +521,24 @@
       input.style.width = '100%';
       input.style.fontFamily = 'Montserrat, sans-serif';
       input.style.fontWeight = (type === 'list') ? '700' : '400';
-      input.style.border = '1px solid #c1c7d0';
+      input.style.border = '1px solid #2b3440';
       input.style.borderRadius = '6px';
       input.style.padding = '6px';
-      input.style.background = '#fff';
+      input.style.background = '#0b1220';
+      input.style.color = 'var(--text)';
 
       el.replaceWith(input);
       input.focus();
-      input.select();
+      setTimeout(() => {
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+      }, 0);
 
       function save() {
         const val = input.value.trim();
-        const replacement = document.createElement(type === 'list' ? 'div' : 'div');
+        const replacement = document.createElement('div');
         replacement.className = type === 'list' ? 'list-title' : 'card-content';
-        replacement.textContent = val || current; // keep old if empty
+        replacement.textContent = val || current;
         replacement.addEventListener('dblclick', () => renameElement(replacement, type));
         input.replaceWith(replacement);
       }
@@ -423,7 +546,6 @@
       input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
     }
 
-    // Card drag & drop
     let cardDrag = { el: null, ghost: null };
     function onCardDragStart(e) {
       cardDrag.el = e.target.closest('.card');
@@ -479,10 +601,10 @@
       }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    // List drag & drop
     let listDrag = { el: null, ghost: null };
     function onListDragStart(e) {
-      listDrag.el = e.target.closest('.list');
+      const header = e.currentTarget;
+      listDrag.el = header.closest('.list');
       if (!listDrag.el || listDrag.el.id === 'addList') return;
       e.stopPropagation();
       e.dataTransfer.effectAllowed = 'move';
@@ -533,22 +655,21 @@
       }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    // Add new list
     const nameInput = document.getElementById('newListName');
     const addListBtn = document.getElementById('addListBtn');
     function addList(name) {
       const trimmed = name.trim();
       if (!trimmed) return;
+      const id = trimmed.toLowerCase().replace(/\s+/g, '-');
       const list = document.createElement('section');
       list.className = 'list anim-add';
-      list.dataset.listId = trimmed.toLowerCase().replace(/\s+/g, '-');
-      list.draggable = true;
+      list.dataset.listId = id;
       list.innerHTML = `
-        <div class="list-header">
+        <div class="list-header" draggable="true">
           <div class="list-title">${escapeHtml(trimmed)}</div>
           <button class="remove" title="Delete list" aria-label="Delete list">×</button>
         </div>
-        <div class="cards" data-list="${list.dataset.listId}"></div>
+        <div class="cards" data-list="${id}"></div>
         <div class="add-card">
           <input type="text" placeholder="Add a card..." />
           <button>Add</button>
@@ -562,10 +683,10 @@
 
     function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
 
-    // Download functionality (file name = project name)
+    // Download functionality
     downloadBtn.addEventListener('click', () => {
-      const nameEl = document.getElementById('projectTitle');
-      const name = (nameEl ? nameEl.textContent : 'Project Board').trim() || 'Project Board';
+      const rawName = (boardNameInput.value || '').trim();
+      const name = rawName || 'Project Board';
       let content = `"${name}"\n`;
       document.querySelectorAll('.list').forEach(list => {
         if (list.id === 'addList') return;
@@ -581,7 +702,6 @@
       URL.revokeObjectURL(a.href);
     });
 
-    // Import functionality (accept only valid .txt format)
     importBtn.addEventListener('click', () => importFile.click());
     importFile.addEventListener('change', e => {
       const file = e.target.files[0];
@@ -592,36 +712,33 @@
           const lines = (reader.result || '').split('\n').map(l => l.trim()).filter(Boolean);
           if (!lines.length) return;
 
-          // First line => project name
           const projMatch = lines[0].match(/^"(.*)"$/);
           const projName = projMatch ? projMatch[1] : null;
-          if (projName) {
-            const titleEl = document.getElementById('projectTitle');
-            titleEl.textContent = projName.slice(0, 30);
+          if (projName !== null) {
+            boardNameInput.value = projName.slice(0, 30);
+            boardNameInput.style.width = 'auto';
+            updateBoardNameWidth();
           }
 
-          // Clear existing lists except addList
           document.querySelectorAll('.list').forEach(l => { if (l.id !== 'addList') l.remove(); });
 
-          // Parse lists: "List name"["card1","card2",...]
           lines.slice(1).forEach(line => {
             const m = line.match(/^"([^"]+)"\[(.*)\]$/);
-            if (!m) return; // silently ignore invalid
+            if (!m) return;
             const listName = m[1];
             const raw = m[2].trim();
-            const cards = raw
-              ? raw.match(/"([^"]*)"/g)?.map(s => s.replace(/^"|"$/g, '')) || []
-              : [];
+            const cards = raw ? raw.match(/"([^"]*)"/g)?.map(s => s.replace(/^"|"$/g, '')) || [] : [];
 
+            const id = listName.toLowerCase().replace(/\s+/g, '-');
             const list = document.createElement('section');
             list.className = 'list anim-add';
-            list.draggable = true;
+            list.dataset.listId = id;
             list.innerHTML = `
-              <div class="list-header">
+              <div class="list-header" draggable="true">
                 <div class="list-title">${escapeHtml(listName)}</div>
                 <button class="remove" title="Delete list" aria-label="Delete list">×</button>
               </div>
-              <div class="cards"></div>
+              <div class="cards" data-list="${id}"></div>
               <div class="add-card">
                 <input type="text" placeholder="Add a card..." />
                 <button>Add</button>
@@ -634,7 +751,6 @@
 
           wireLists();
         } catch {
-          // silently ignore bad format
         } finally {
           importFile.value = '';
         }
@@ -645,6 +761,7 @@
     // Init
     renderSeed();
     wireLists();
+    updateBoardNameWidth();
   </script>
 </body>
 </html>
