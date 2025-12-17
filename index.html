@@ -69,6 +69,12 @@
       overflow: hidden;
     }
 
+    .board-name input {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
     #boardNameInput {
       background: transparent;
       border: none;
@@ -332,7 +338,7 @@
 
     <div class="board-name-wrap" aria-hidden="false">
       <div class="board-name" aria-hidden="false">
-        <input id="boardNameInput" type="text" value="Unnamed" maxlength="30" aria-label="Board name" />
+        <input id="boardNameInput" type="text" value="Unnamed" maxlength="30" aria-label="Board name" autocomplete="off" />
       </div>
     </div>
 
@@ -402,20 +408,25 @@
       done: ["Card 3"]
     };
 
-    function updateBoardNameWidth() {
-      const raw = boardNameInput.value;
-      const text = (raw === null || raw === undefined || raw === '') ? ' ' : raw;
-      const cs = window.getComputedStyle(boardNameInput);
-      measurer.style.fontFamily = cs.fontFamily;
-      measurer.style.fontWeight = cs.fontWeight;
-      measurer.style.fontSize = cs.fontSize;
-      measurer.textContent = text;
-      const measured = Math.ceil(measurer.getBoundingClientRect().width);
-      const desired = measured;
-      const parentWidth = boardNameInput.parentElement.getBoundingClientRect().width;
-      const maxAllowed = Math.max(parentWidth - 8, 24);
-      boardNameInput.style.width = Math.min(desired, maxAllowed) + 'px';
-    }
+function updateBoardNameWidth() {
+  const raw = boardNameInput.value;
+  const text = (raw === null || raw === undefined || raw === '') ? ' ' : raw;
+
+  measurer.style.whiteSpace = 'pre';
+  const cs = window.getComputedStyle(boardNameInput);
+  measurer.style.fontFamily = cs.fontFamily;
+  measurer.style.fontWeight = cs.fontWeight;
+  measurer.style.fontSize = cs.fontSize;
+
+  measurer.textContent = text;
+  const measured = Math.ceil(measurer.getBoundingClientRect().width);
+  const desired = measured;
+
+  const parentWidth = boardNameInput.parentElement.getBoundingClientRect().width;
+  const maxAllowed = Math.max(parentWidth - 8, 24);
+
+  boardNameInput.style.width = Math.min(desired, maxAllowed) + 'px';
+}
 
     (function initBoardName() {
       boardNameInput.setAttribute('maxlength', '30');
@@ -429,6 +440,18 @@
       });
 
       boardNameInput.addEventListener('input', updateBoardNameWidth);
+
+boardNameInput.addEventListener('input', () => {
+  const before = boardNameInput.value;
+  const sanitized = before.replace(/^\s+/, '')
+                          .replace(/\s{2,}/g, ' ');
+  if (sanitized !== before) {
+    const pos = boardNameInput.selectionStart;
+    boardNameInput.value = sanitized;
+    boardNameInput.setSelectionRange(Math.max(0, pos - (before.length - sanitized.length)), Math.max(0, pos - (before.length - sanitized.length)));
+  }
+  updateBoardNameWidth();
+});
 
       boardNameInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -643,6 +666,18 @@
       }
       onListDragEnd();
     });
+function resetBoardNameToDefault() {
+  const defaultName = 'Unnamed';
+  boardNameInput.value = defaultName;
+  boardNameInput.defaultValue = defaultName;
+  updateBoardNameWidth();
+}
+
+window.addEventListener('load', resetBoardNameToDefault);
+
+window.addEventListener('pageshow', (ev) => {
+  resetBoardNameToDefault();
+});
     function getListAfterElement(container, x) {
       const lists = [...container.querySelectorAll('.list')].filter(el => el !== listDrag.el && el.id !== 'addList');
       return lists.reduce((closest, child) => {
@@ -766,4 +801,3 @@
   </script>
 </body>
 </html>
-
